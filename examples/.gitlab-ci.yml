@@ -1,0 +1,56 @@
+variables:
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+  GIT_DEPTH: "0"
+
+stages:
+  - clean-workspace
+  - security
+
+unlock-runner:
+  stage: clean-workspace
+  tags:
+    - runner-trivy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - docker run --rm -v "$PWD:/app" -w /app alpine rm -rf .sonar .scannerwork
+
+trivy-sonar-pipeline:
+  stage: security
+  tags:
+    - runner-trivy
+  needs: 
+    - unlock-runner
+  script:
+    - docker build -t my-app:$CI_COMMIT_SHA .
+    - |
+      docker run --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v "$PWD:/src" \
+      -w /src \
+      aquasec/trivy:latest \
+      image --scanners vuln --format json --output trivy-raw.json --exit-code 0 my-app:$CI_COMMIT_SHA
+    - python3 trivy-to-sonar.py trivy-raw.json trivy-sonar-report.json
+    - mkdir -p .sonar/cache
+    - |
+      docker run --rm \
+      --user $(id -u):$(id -g) \
+      -e SONAR_TOKEN="$SONAR_TOKEN" \
+      -e SONAR_HOST_URL="http://YOUR_SONAR_HOST" \
+      -e SONAR_USER_HOME="/usr/src/.sonar" \
+      -v "$PWD:/usr/src" \
+      -v /etc/passwd:/etc/passwd:ro \
+      -w /usr/src \
+      sonarsource/sonar-scanner-cli:latest \
+      -Dsonar.projectKey=YourProjectKey \
+      -Dsonar.sources=. \
+      -Dsonar.working.directory=.scannerwork \
+      -Dsonar.qualitygate.wait=true \
+      -Dsonar.externalIssuesReportPaths=trivy-sonar-report.json
+    - docker rmi my-app:$CI_COMMIT_SHA
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - trivy-sonar-report.json
+    expire_in: 1 day
