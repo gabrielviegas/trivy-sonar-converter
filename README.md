@@ -20,6 +20,15 @@ This script processes the Trivy report and applies the following logic:
 2. **Severity Mapping:** Maps Trivy severities to SonarQube's strict levels (e.g., `CRITICAL` -> `BLOCKER`).
 3. **Type Enforcement:** Forces the issue type to `VULNERABILITY` so it appears in the Security tab (not as a Code Smell).
 
+## 🏆 Results
+
+![SonarQube Issues Proof](images/sonar-issues-proof.png)
+
+**2. Anchored to Code**
+Vulnerabilities are displayed in context, anchored to the first line of your Dockerfile.
+
+![Dockerfile View](images/dockerfile-view.png)
+
 ## 🚀 Usage
 
 ### Prerequisites
