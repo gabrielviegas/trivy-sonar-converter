@@ -46,7 +46,6 @@ Check the examples/.gitlab-ci.yml file in this repository for a production-ready
 * SonarQube caching.
 
 * Quality Gate checks.
-```
 
 ## ⚙️ Code Quality
 The script is optimized to pass SonarQube's own quality gates (Cognitive Complexity < 15), ensuring the pipeline script itself doesn't introduce code smells to your project.
