@@ -37,8 +37,8 @@ trivy image --format json --output trivy.json my-image:latest
 
 # 2. Convert to Sonar Format
 python3 trivy-to-sonar.py trivy.json sonar-report.json
-
-## 3. GitLab CI/CD Integration
+```
+### 3. GitLab CI/CD Integration
 Check the examples/.gitlab-ci.yml file in this repository for a production-ready pipeline that handles:
 
 * Docker-in-Docker permission fixes.
